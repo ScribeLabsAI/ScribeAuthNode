@@ -1,0 +1,37 @@
+name: Update docs
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  create-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install deps
+        run: npm install
+      - name: Build project
+        run: npm run build:lib && npm run build:bin
+      - name: Create md files
+        run: npx typedoc --excludePrivate --out ./docs --plugin typedoc-plugin-markdown ./src
+      - name: Compile md files
+        run: npx concat-md --decrease-title-levels --ignore README.md --dir-name-as-title docs > docs/reference.md
+      - name: Update docs website
+        uses: car-on-sale/action-pull-request-another-repo@v1.3.1
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.WEBSITE_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.WEBSITE_GITHUB_TOKEN }}
+        with:
+          source_folder: 'docs'
+          destination_repo: 'ScribeLabsAI/documentation'
+          destination_folder: 'docs/SDK/auth-node'
+          destination_base_branch: 'master'
+          destination_head_branch: 'auth-node-update'
+          commit_msg: 'docs(authNode): Update Auth Node doc'
+          pr_title: 'Update Auth Node doc'
+          pull_request_reviewers: 'EHadoux'
+          user_email: 'ailin@scribelabs.ai'
+          user_name: 'ailinvenerus'

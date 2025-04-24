@@ -149,15 +149,15 @@ export class Auth {
     return true;
   }
 
+  /**
+   * Allows a user to enter a confirmation code sent to their email to reset a forgotten password.
+   *
+   * @param username - Username (usually an email address).
+   * @param password - Password associated with this username.
+   * @param confirmationCode - Confirmation code sent to the user's email.
+   * @returns A boolean indicating the success of the password reset.
+   */
   async forgotPassword(username: string, password: string, confirmationCode: string) {
-    /**
-     * Allows a user to enter a confirmation code sent to their email to reset a forgotten password.
-     *
-     * @param username - Username (usually an email address).
-     * @param password - Password associated with this username.
-     * @param confirmationCode - Confirmation code sent to the user's email.
-     * @returns A boolean indicating the success of the password reset.
-     */
     if (!this.clientId) throw new MissingIdError('Missing client ID');
     try {
       await this.client.confirmForgotPassword({
@@ -174,20 +174,21 @@ export class Auth {
     }
   }
 
+  /**
+   * A user gets their tokens (refreshToken, accessToken, and idToken).
+   * The password from params never abandons the user's machine.
+   *
+   * @param param - Username and password OR refreshToken.
+   * @param param.username - Username (usually an email address).
+   * @param param.password - Password associated with this username.
+   *                   OR
+   * @param param.refreshToken - Refresh token to use.
+   * @returns Tokens - Object containing the refreshToken, accessToken, and idToken.
+   *                   { "refreshToken": string, "accessToken": string, "idToken": string }
+   * @returns Challenge - Object containing the challengeName, challengeParameters, and user.
+   *                      { "challengeName": string, "challengeParameters": { "FRIENDLY_DEVICE_NAME": string }, "user": CognitoUser }
+   */
   async getTokens(param: UsernamePassword | RefreshToken): Promise<Tokens | Challenge> {
-    /**
-     * A user gets their tokens (refreshToken, accessToken, and idToken).
-     * The password from params never abandons the user's machine.
-     *
-     * @param username - Username (usually an email address).
-     * @param password - Password associated with this username.
-     *                   OR
-     * @param refreshToken - Refresh token to use.
-     * @returns Tokens - Object containing the refreshToken, accessToken, and idToken.
-     *                   { "refreshToken": string, "accessToken": string, "idToken": string }
-     * @returns Challenge - Object containing the challengeName, challengeParameters, and user.
-     *                      { "challengeName": string, "challengeParameters": { "FRIENDLY_DEVICE_NAME": string }, "user": CognitoUser }
-     */
     if ('username' in param && 'password' in param) {
       const { username, password } = param;
       return await this.getTokensWithPair(username, password);
@@ -264,19 +265,19 @@ export class Auth {
     }
   }
 
+  /**
+   * Respond to an MFA auth challenge with a code generated from an auth app (e.g. Authy).
+   * @param user - Cognito user.
+   * @param code - Code generated from the auth app.
+   * @param challengeParameters - ChallengeParameters from Challenge.
+   * @returns Tokens - Object containing the refreshToken, accessToken, and idToken.
+   *                   { "refreshToken": string, "accessToken": string, "idToken": string }
+   */
   async respondToAuthChallengeMfa(
     user: CognitoUser,
     code: string,
     challengeParameters: Challenge['challengeParameters']
   ): Promise<Tokens> {
-    /**
-     * Respond to an MFA auth challenge with a code generated from an auth app (e.g. Authy).
-     * @param user - Cognito user.
-     * @param code - Code generated from the auth app.
-     * @param challengeParameters - ChallengeParameters from Challenge.
-     * @returns Tokens - Object containing the refreshToken, accessToken, and idToken.
-     *                   { "refreshToken": string, "accessToken": string, "idToken": string }
-     */
     try {
       const result = await this.respondToMfaChallenge(user, code, challengeParameters);
       if (result) {
@@ -334,13 +335,13 @@ export class Auth {
     }
   }
 
+  /**
+   * A user gets their federated id.
+   *
+   * @param idToken - Id token to use.
+   * @returns A string containing the federatedId.
+   */
   async getFederatedId(idToken: string): Promise<string> {
-    /**
-     * A user gets their federated id.
-     *
-     * @param idToken - Id token to use.
-     * @returns A string containing the federatedId.
-     */
     if (!this.userPoolId) throw new MissingIdError('Missing user pool ID');
     if (!this.fedClient)
       throw new MissingIdError(
@@ -366,15 +367,15 @@ export class Auth {
     }
   }
 
+  /**
+   * A user gets their federated credentials (AccessKeyId, SecretKey and SessionToken).
+   *
+   * @param id - Federated id.
+   * @param idToken - Id token to use.
+   * @returns Credentials - Object containing the AccessKeyId, SecretKey, SessionToken and Expiration.
+   *                   { "AccessKeyId": string, "SecretKey": string, "SessionToken": string, "Expiration": string }
+   */
   async getFederatedCredentials(id: string, idToken: string): Promise<Credentials> {
-    /**
-     * A user gets their federated credentials (AccessKeyId, SecretKey and SessionToken).
-     *
-     * @param id - Federated id.
-     * @param idToken - Id token to use.
-     * @returns Credentials - Object containing the AccessKeyId, SecretKey, SessionToken and Expiration.
-     *                   { "AccessKeyId": string, "SecretKey": string, "SessionToken": string, "Expiration": string }
-     */
     if (!this.userPoolId) throw new MissingIdError('Missing user pool ID');
     if (!this.fedClient)
       throw new MissingIdError(
@@ -403,30 +404,26 @@ export class Auth {
     }
   }
 
+  /**
+   * A user gets a signature for a request.
+   *
+   * @param request - Request to send.
+   * @param credentials - Credentials for the signature creation.
+   * @returns HeaderBag - Headers containing the signature for the request.
+   */
   async getSignatureForRequest(request: HttpRequest, credentials: Credentials) {
-    /**
-     * A user gets a signature for a request.
-     *
-     * @param request - Request to send.
-     * @param credentials - Credentials for the signature creation.
-     * @returns HeaderBag - Headers containing the signature for the request.
-     */
-    try {
-      const signer = new SignatureV4({
-        credentials: {
-          accessKeyId: credentials.AccessKeyId,
-          secretAccessKey: credentials.SecretKey,
-          sessionToken: credentials.SessionToken,
-        },
-        service: 'execute-api',
-        region: 'eu-west-2',
-        sha256: Sha256,
-      });
-      const signatureRequest = await signer.sign(request);
-      return signatureRequest.headers;
-    } catch (err) {
-      throw err;
-    }
+    const signer = new SignatureV4({
+      credentials: {
+        accessKeyId: credentials.AccessKeyId,
+        secretAccessKey: credentials.SecretKey,
+        sessionToken: credentials.SessionToken,
+      },
+      service: 'execute-api',
+      region: 'eu-west-2',
+      sha256: Sha256,
+    });
+    const signatureRequest = await signer.sign(request);
+    return signatureRequest.headers;
   }
 
   // async revokeRefreshToken(refreshToken: string): Promise<boolean> {
