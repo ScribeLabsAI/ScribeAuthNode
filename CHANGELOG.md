@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/2.0.2...2.0.3) (2025-10-21)
+
+
+### Bug Fixes
+
+* deployment configuration ([d2d06dc](https://github.com/ScribeLabsAI/ScribeAuthNode/commit/d2d06dcafa9a6c3239915123f636422e00ae149b))
+
 ## [2.0.2](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/2.0.1...2.0.2) (2025-10-21)
 
 
