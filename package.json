@@ -1,6 +1,6 @@
 {
   "name": "@scribelabsai/auth",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Library to connect to Scribe's platform.",
   "type": "module",
   "main": "./dist/src/index.js",
