@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/2.0.1...2.0.2) (2025-10-21)
+
+
+### Bug Fixes
+
+* use OIDC to publish package ([9d89baf](https://github.com/ScribeLabsAI/ScribeAuthNode/commit/9d89bafa05b97dae7e40dd171646604a01813f8d))
+
 ## [2.0.1](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/2.0.0...2.0.1) (2025-10-21)
 
 
