@@ -54,6 +54,29 @@ const access = new Auth(clientId);
 access.getTokens({ username: 'username', password: 'password' });
 ```
 
+##### With username and password (MFA enabled)
+
+```javascript
+import { Auth, Tokens, Challenge } from '@scribelabsai/auth';
+const access = new Auth(clientId);
+const result = await access.getTokens({ username: 'username', password: 'password' });
+
+// Check if MFA challenge is required
+if ('challengeName' in result && result.challengeName === 'SOFTWARE_TOKEN_MFA') {
+  // Prompt user for MFA code from their authenticator app
+  const mfaCode = '123456'; // Get this from user input
+  const tokens = await access.respondToAuthChallengeMfa(
+    result.user,
+    mfaCode,
+    result.challengeParameters
+  );
+  console.log(tokens);
+} else {
+  // No MFA required, result is already the tokens
+  console.log(result);
+}
+```
+
 ##### With refresh token
 
 ```javascript
@@ -65,42 +88,6 @@ access.getTokens({ refreshToken: 'refreshToken' });
 ### 4. Revoking a refresh token
 
 #### Disclaimer: revokeToken(refreshToken) is not ready yet, you may use our [Python lib](https://github.com/ScribeLabsAI/ScribeAuth) or call AWS services directly.
-
-### 5. Getting federated id
-
-```javascript
-import { Auth, Tokens } from '@scribelabsai/auth';
-const access = new Auth({
-  clientId: your_client_id,
-  userPoolId: your_user_pool_id,
-  identityPoolId: your_identity_pool_id,
-});
-access.getFederatedId(your_id_token);
-```
-
-### 6. Getting federated credentials
-
-```javascript
-import { Auth, Tokens } from '@scribelabsai/auth';
-const access = new Auth({
-  clientId: your_client_id,
-  userPoolId: your_user_pool_id,
-  identityPoolId: your_identity_pool_id,
-});
-access.getFederatedCredentials(your_federated_id, your_id_token);
-```
-
-### 7. Getting signature for request
-
-```javascript
-import { Auth, Tokens } from '@scribelabsai/auth';
-const access = new Auth({
-  clientId: your_client_id,
-  userPoolId: your_user_pool_id,
-  identityPoolId: your_identity_pool_id,
-});
-access.getSignatureForRequest(your_request, your_credentials);
-```
 
 ## Flow
 
