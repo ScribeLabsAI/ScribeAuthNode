@@ -12,7 +12,7 @@ Add the dependency to your package.json and save it:
 
 ```
 "dependencies": {
-	"@scribelabsai/auth": ">=1.0.0"
+	"@scribelabsai/auth": ">=2.0.0"
 }
 ```
 

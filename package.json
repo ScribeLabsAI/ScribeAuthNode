@@ -53,11 +53,8 @@
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity": "^3.348.0",
-    "@aws-sdk/client-cognito-identity-provider": "^3.332.0",
-    "@smithy/protocol-http": "^3.0.8",
-    "@smithy/signature-v4": "^2.0.1",
+    "@aws-sdk/client-cognito-identity-provider": "^3.760.0",
     "amazon-cognito-identity-js": "^6.2.0",
-    "aws-sdk": "^2.1379.0",
-    "commander": "^11.0.0"
+    "jsonwebtoken": "^9.0.2"
   }
 }

@@ -1,29 +1,20 @@
-import { Sha256 } from '@aws-crypto/sha256-js';
-import {
-  CognitoIdentityClient,
-  GetCredentialsForIdentityCommand,
-  GetCredentialsForIdentityCommandOutput,
-  GetIdCommand,
-} from '@aws-sdk/client-cognito-identity';
 import {
   CognitoIdentityProvider,
   InitiateAuthCommandOutput,
 } from '@aws-sdk/client-cognito-identity-provider';
-import { HttpRequest } from '@smithy/protocol-http';
-import { SignatureV4 } from '@smithy/signature-v4';
 import {
   AuthenticationDetails,
   ClientMetadata,
   CognitoUser,
   CognitoUserPool,
 } from 'amazon-cognito-identity-js';
+import jwt from 'jsonwebtoken';
 import {
   MFAError,
   MissingFieldError,
   MissingIdError,
   TooManyRequestsError,
   UnauthorizedError,
-  UnknownError,
 } from './errors.js';
 
 export interface UsernamePassword {
@@ -56,39 +47,69 @@ export interface Credentials {
   Expiration: Date;
 }
 
-function isCompleteCredentials(
-  cred: GetCredentialsForIdentityCommandOutput['Credentials']
-): cred is Credentials {
-  return !!cred?.AccessKeyId && !!cred.SecretKey && !!cred.SessionToken && !!cred.Expiration;
+export class SelfManagedSigner {
+  /**
+   * Creates a signer for Self-Managed JWT auth.
+   * @param privateKey - Private key related to the public key provided to Scribe.
+   * @param issuer - Issuer as communicated to Scribe. Usually the company name.
+   * @param sub - Account id. Provided by Scribe.
+   */
+  constructor(
+    private privateKey: string,
+    private issuer: string,
+    private sub: string
+  ) {}
+
+  /**
+   * Signs a JWT with the private key.
+   * @param scopes - The scopes to include in the JWT.
+   * @param exp - The expiration time of the JWT in seconds.
+   * @returns The signed JWT.
+   */
+  sign(scopes: string[], exp: number): string {
+    const payload = {
+      iss: this.issuer,
+      sub: this.sub,
+      aud: 'https://apis.scribelabs.ai',
+      scope: scopes.join(' '),
+      exp: exp,
+    };
+
+    return jwt.sign(payload, this.privateKey, { algorithm: 'RS256' });
+  }
+}
+
+/**
+ * Decodes a JWT.
+ * @param token - The JWT to decode.
+ * @param publicKey - The public key to verify the JWT with.
+ * @returns The decoded JWT payload.
+ */
+export function decodeSelfSignedJwt(token: string, publicKey: string): jwt.JwtPayload {
+  return jwt.verify(token, publicKey, {
+    algorithms: ['RS256'],
+    audience: 'https://apis.scribelabs.ai',
+  }) as jwt.JwtPayload;
 }
 
 export class Auth {
   private client: CognitoIdentityProvider;
-  private fedClient: CognitoIdentityClient | undefined;
   private clientId: string;
   private userPoolId: string;
-  private identityPoolId: string | undefined;
 
   /**
    * Construct an authorization client.
    * @param params - The parameters to construct the client.
    * @param params.clientId - The client ID of the application provided by Scribe.
    * @param params.userPoolId - The user pool ID provided by Scribe.
-   * @param params.identityPoolId - The identity pool ID provided by Scribe.
    */
-  constructor(params: { clientId: string; userPoolId: string; identityPoolId?: string }) {
+  constructor(params: { clientId: string; userPoolId: string }) {
     const region = 'eu-west-2';
     this.client = new CognitoIdentityProvider({
       region,
     });
     this.clientId = params.clientId;
     this.userPoolId = params.userPoolId;
-    this.identityPoolId = params.identityPoolId;
-    if (params.identityPoolId) {
-      this.fedClient = new CognitoIdentityClient({
-        region,
-      });
-    }
   }
 
   /**
@@ -330,101 +351,6 @@ export class Auth {
       });
     } catch (err) {
       console.log(err);
-      throw err;
-    }
-  }
-
-  async getFederatedId(idToken: string): Promise<string> {
-    /**
-     * A user gets their federated id.
-     *
-     * @param idToken - Id token to use.
-     * @returns A string containing the federatedId.
-     */
-    if (!this.userPoolId) throw new MissingIdError('Missing user pool ID');
-    if (!this.fedClient)
-      throw new MissingIdError(
-        'Identity Pool ID is not provided. Create a new Auth object using identityPoolId'
-      );
-    try {
-      const response = await this.fedClient.send(
-        new GetIdCommand({
-          IdentityPoolId: this.identityPoolId,
-          Logins: {
-            [`cognito-idp.eu-west-2.amazonaws.com/${this.userPoolId}`]: idToken,
-          },
-        })
-      );
-      if (!response.IdentityId) throw new UnknownError('Could not retrieve federated id');
-      return response.IdentityId;
-    } catch (err) {
-      if (err instanceof Error && err.name === 'NotAuthorizedException')
-        throw new UnauthorizedError('Could not retrieve federated id', err);
-      else if (err instanceof Error && err.name === 'TooManyRequestsException')
-        throw new TooManyRequestsError('Too many requests. Try again later');
-      throw err;
-    }
-  }
-
-  async getFederatedCredentials(id: string, idToken: string): Promise<Credentials> {
-    /**
-     * A user gets their federated credentials (AccessKeyId, SecretKey and SessionToken).
-     *
-     * @param id - Federated id.
-     * @param idToken - Id token to use.
-     * @returns Credentials - Object containing the AccessKeyId, SecretKey, SessionToken and Expiration.
-     *                   { "AccessKeyId": string, "SecretKey": string, "SessionToken": string, "Expiration": string }
-     */
-    if (!this.userPoolId) throw new MissingIdError('Missing user pool ID');
-    if (!this.fedClient)
-      throw new MissingIdError(
-        'Identity Pool ID is not provided. Create a new Auth object using identityPoolId'
-      );
-    try {
-      const response = await this.fedClient.send(
-        new GetCredentialsForIdentityCommand({
-          IdentityId: id,
-          Logins: {
-            [`cognito-idp.eu-west-2.amazonaws.com/${this.userPoolId}`]: idToken,
-          },
-        })
-      );
-      if (!isCompleteCredentials(response.Credentials))
-        throw new UnknownError('Could not retrieve federated credentials');
-      return response.Credentials;
-    } catch (err) {
-      if (err instanceof Error && err.name === 'NotAuthorizedException')
-        throw new UnauthorizedError('Could not retrieve federated credentials', err);
-      else if (err instanceof Error && err.name === 'TooManyRequestsException')
-        throw new TooManyRequestsError('Too many requests. Try again later');
-      else if (err instanceof Error && err.name === 'ResourceNotFoundException')
-        throw new UnauthorizedError('Federated id incorrect', err);
-      throw err;
-    }
-  }
-
-  async getSignatureForRequest(request: HttpRequest, credentials: Credentials) {
-    /**
-     * A user gets a signature for a request.
-     *
-     * @param request - Request to send.
-     * @param credentials - Credentials for the signature creation.
-     * @returns HeaderBag - Headers containing the signature for the request.
-     */
-    try {
-      const signer = new SignatureV4({
-        credentials: {
-          accessKeyId: credentials.AccessKeyId,
-          secretAccessKey: credentials.SecretKey,
-          sessionToken: credentials.SessionToken,
-        },
-        service: 'execute-api',
-        region: 'eu-west-2',
-        sha256: Sha256,
-      });
-      const signatureRequest = await signer.sign(request);
-      return signatureRequest.headers;
-    } catch (err) {
       throw err;
     }
   }
