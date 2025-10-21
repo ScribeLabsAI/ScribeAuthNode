@@ -24,6 +24,7 @@
   },
   "author": "Ailín Venerus <ailin@scribelabs.ai>",
   "license": "MIT License",
+  "url": "https://github.com/ScribeLabsAI/ScribeAuthNode",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
