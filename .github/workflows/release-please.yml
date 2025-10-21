@@ -34,7 +34,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build source
         if: steps.release.outputs.release_created
-        run: npm run build:lib && npm run build:bin
+        run: npm run build
       - name: Publish
         if: steps.release.outputs.release_created
         run: npm publish

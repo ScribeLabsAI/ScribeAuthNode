@@ -23,8 +23,8 @@ jobs:
         run: npm install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build lib and tests
-        run: npm run build:lib
+      - name: Build lib
+        run: npm run build
       - name: Run tests
         run: npm t
         env:
