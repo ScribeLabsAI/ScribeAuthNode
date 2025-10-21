@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.5](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/2.0.4...2.0.5) (2025-10-21)
+
+
+### Bug Fixes
+
+* repository url for package provenance ([9913f27](https://github.com/ScribeLabsAI/ScribeAuthNode/commit/9913f27327a565b43f5e716bf14daa819da9ec07))
+
 ## [2.0.4](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/2.0.3...2.0.4) (2025-10-21)
 
 
