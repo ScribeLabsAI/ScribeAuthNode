@@ -6,10 +6,11 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "!**/tsconfig.tsbuildinfo"
   ],
   "bin": {
-    "auth": "./dist/bin/auth.js"
+    "auth": "dist/bin/auth.js"
   },
   "exports": "./dist/src/index.js",
   "sideEffects": false,
