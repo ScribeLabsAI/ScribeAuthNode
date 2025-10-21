@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.0](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/1.4.1...2.0.0) (2025-10-21)
+
+
+### Features
+
+* add self managed signer and remove federated pool auth ([0ff393c](https://github.com/ScribeLabsAI/ScribeAuthNode/commit/0ff393c936cd9583224464070d2832fca95d0f66))
+
+
+### Bug Fixes
+
+* force 2.0.0 ([1119914](https://github.com/ScribeLabsAI/ScribeAuthNode/commit/111991478dd85056ec9dc86c748e5dfb63614587))
+
 ## [1.4.1](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/1.4.0...1.4.1) (2023-11-10)
 
 
