@@ -9,7 +9,7 @@
     "dist/**/*"
   ],
   "bin": {
-    "auth": "./dist/bin/index.js"
+    "auth": "./dist/bin/auth.js"
   },
   "exports": "./dist/src/index.js",
   "sideEffects": false,
