@@ -13,10 +13,10 @@ jobs:
     steps:
       - name: Clone
         uses: actions/checkout@v5
-      - name: Use Node.js 18.x
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
-          node-version: 18.x
+          node-version: 22.x
           registry-url: 'https://registry.npmjs.org/'
           scope: '@scribelabsai'
       - name: Install deps
@@ -34,4 +34,3 @@ jobs:
           PASSWORD: ${{ secrets.PASSWORD }}
           OTPCODE: ${{ secrets.OTPCODE }}
           USER_POOL_ID: ${{ secrets.USER_POOL_ID }}
-          FEDERATED_POOL_ID: ${{ secrets.FEDERATED_POOL_ID }}

@@ -1,6 +1,0 @@
-node_modules
-dist
-coverage
-.eslintrc.cjs
-vitest.config.js
-vitest.config.ts
