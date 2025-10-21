@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.4](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/2.0.3...2.0.4) (2025-10-21)
+
+
+### Bug Fixes
+
+* url is missing in package.json ([247ec70](https://github.com/ScribeLabsAI/ScribeAuthNode/commit/247ec7090bd2f111e7465c5abaa4a7eef504e8f9))
+
 ## [2.0.3](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/2.0.2...2.0.3) (2025-10-21)
 
 
