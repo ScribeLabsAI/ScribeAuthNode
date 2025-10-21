@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/2.0.0...2.0.1) (2025-10-21)
+
+
+### Bug Fixes
+
+* reorganise the artifacts for publishing ([9fcad57](https://github.com/ScribeLabsAI/ScribeAuthNode/commit/9fcad572153727309434f494368530816361d574))
+
 ## [2.0.0](https://github.com/ScribeLabsAI/ScribeAuthNode/compare/1.4.1...2.0.0) (2025-10-21)
 
 
